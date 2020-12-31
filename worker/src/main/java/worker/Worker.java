@@ -4,11 +4,16 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import java.sql.*;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 
 class Worker {
+  
+  @Value("#{systemEnvironment['REDIS_PASSWORD']}")
+  private String redisPassword;
+  
   public static void main(String[] args) {
     try {
-      Jedis redis = connectToRedis("redis");
+      Jedis redis = connectToRedis("redis", this.redisPassword);
       Connection dbConn = connectToDB("db");
 
       System.err.println("Watching vote queue");
@@ -45,10 +50,10 @@ class Worker {
     }
   }
 
-  static Jedis connectToRedis(String host) {
+  static Jedis connectToRedis(String host, String redisPassword) {
     Jedis conn = new Jedis(host);
     try {
-        conn.auth("redis_password");
+        conn.auth(redisPassword);
     } catch (Exception e) {
     }
     
